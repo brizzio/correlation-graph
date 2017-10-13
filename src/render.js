@@ -640,7 +640,7 @@ export default function render(props) {
         // fade table text for rows below the threshold
         d3.select('.pictogramTable').selectAll('tr').style('color', function(d) {
           // first style the label associated with the mark
-          console.log('d from span selection', d);
+          // console.log('d from span selection', d);
           if (d.weight < sliderValue) {
             return '#CCC';
           }
