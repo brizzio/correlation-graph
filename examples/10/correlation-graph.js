@@ -61,8 +61,8 @@ function dragended(simulation) {
 function drawText(props) {
   var selector = props.selector;
   var height = props.height;
-  var xOffset = 75;
-  var yOffset = height - 10;
+  var xOffset = props.xOffset;
+  var yOffset = props.yOffset;
   var text = props.text;
   d3.select(selector).append('g').attr('transform', 'translate(' + xOffset + ',' + yOffset + ')').append('text').style('fill', '#666').style('fill-opacity', 1).style('pointer-events', 'none').style('stroke', 'none').style('font-size', 10).text(text);
 }
@@ -336,11 +336,22 @@ function render(props) {
 
   node.call(d3.drag().on('start', boundDragstarted).on('drag', dragged).on('end', boundDragended));
 
-  // draw the help text
+  // draw the help text for the main network plot
   drawText({
     selector: 'svg',
     text: 'mouse over a node to see it\'s relationships. click the background to reset.',
-    height: height
+    xOffset: 75,
+    yOffset: 10
+  });
+
+  d3.select('body').append('svg').attr('height', 100).attr('width', 960).attr('class', 'sliderTextSVG');
+
+  // draw the help text for the slider
+  drawText({
+    selector: '.sliderTextSVG',
+    text: 'slide to increase the correlation threshold -->',
+    xOffset: 115,
+    yOffset: 40
   });
 
   d3.select('div#graph').append('div').attr('id', 'slider-container');

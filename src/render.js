@@ -361,11 +361,27 @@ export default function render(props) {
       .on('end', boundDragended)
   );
 
-  // draw the help text
+  // draw the help text for the main network plot
   drawText({
     selector: 'svg',
     text: `mouse over a node to see it's relationships. click the background to reset.`,
-    height
+    xOffset: 75,
+    yOffset: 10
+  });
+
+  d3
+    .select('body')
+    .append('svg')
+    .attr('height', 100)
+    .attr('width', 960)
+    .attr('class', 'sliderTextSVG');
+
+  // draw the help text for the slider
+  drawText({
+    selector: '.sliderTextSVG',
+    text: `slide to increase the correlation threshold -->`,
+    xOffset: 115,
+    yOffset: 40
   });
 
   d3

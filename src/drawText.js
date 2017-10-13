@@ -1,8 +1,8 @@
 export default function drawText(props) {
   const selector = props.selector;
   const height = props.height;
-  const xOffset = 75;
-  const yOffset = height - 10;
+  const xOffset = props.xOffset;
+  const yOffset = props.yOffset;
   const text = props.text;
   d3
     .select(selector)
