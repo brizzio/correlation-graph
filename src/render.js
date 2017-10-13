@@ -614,6 +614,7 @@ export default function render(props) {
         return defaultLinkOpacity;
       });
 
+      // fade marks below the threshold
       d3.selectAll('.mark').style('fill-opacity', function(d) {
         // first style the label associated with the mark
         // console.log('d from mark selection', d);
@@ -633,6 +634,19 @@ export default function render(props) {
         }
         return defaultMarkOpacity;
       });
+
+      // if there is a pictogram table on the page
+      if (d3.select('.pictogramTable').nodes().length > 0) {
+        // fade table text for rows below the threshold
+        d3.select('.pictogramTable').selectAll('tr').style('color', function(d) {
+          // first style the label associated with the mark
+          // console.log('d from span selection', d);
+          if (d.weight < sliderValue) {
+            return '#CCC';
+          }
+          return 'black';
+        });
+      }
     }
   }
 }
