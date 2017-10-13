@@ -1,10 +1,10 @@
 /* global d3  queue */
 
-function drawPictogramTable (props) {
+function drawPictogramTable(props) {
   const selector = props.selector;
   const inputData = props.data;
   const options = props.options;
-  
+
   let linksVariable = 'links';
   if (typeof options.linksVariable !== 'undefined') {
     linksVariable = options.linksVariable;
@@ -45,7 +45,6 @@ function drawPictogramTable (props) {
   setupTable(inputData);
 
   function setupTable(inputData) {
-    
     const nodes = inputData[nodesVariable];
     console.log('nodes from drawPictogramTable', nodes);
     let tableData = inputData[linksVariable];
@@ -67,7 +66,8 @@ function drawPictogramTable (props) {
         cl: valueVariable,
         align: 'center',
         html(row) {
-          const scale = d3.scaleThreshold()
+          const scale = d3
+            .scaleThreshold()
             .domain([1, 2, 4, 6])
             .range([1, 2, 3, 4, 5]);
 
@@ -85,7 +85,7 @@ function drawPictogramTable (props) {
           const source = row[sourceVariableLabel];
           const text = `<span class='title left'>${source}</span>`;
           return text;
-        },
+        }
       },
       {
         head: '',
@@ -95,7 +95,7 @@ function drawPictogramTable (props) {
           const arrowLeft = `<span class='fa fa-arrow-left'></span>`;
           const arrowRight = `<span class='fa fa-arrow-right'></span>`;
           return arrowLeft + arrowRight;
-        },
+        }
       },
       {
         head: targetVariable,
@@ -105,7 +105,7 @@ function drawPictogramTable (props) {
           const target = row[targetVariableLabel];
           const text = `<span class='title'>${target}</span>`;
           return text;
-        },
+        }
       }
     ];
 
@@ -120,22 +120,22 @@ function drawPictogramTable (props) {
     function renderTable(table) {
       // console.log('arguments from renderTable', arguments);
 
-      tableUpdate = table.select('thead')
-          .selectAll('th')
-            .data(columns)
+      tableUpdate = table
+        .select('thead')
+        .selectAll('th')
+        .data(columns);
 
       if (typeof tableUpdate !== 'undefined') {
         const tableExit = tableUpdate.exit();
-        tableExit.remove()
+        tableExit.remove();
       }
 
-      tableEnter = tableUpdate
-        .enter().append('th');
+      tableEnter = tableUpdate.enter().append('th');
 
       tableEnter
         .attr('class', d => `${d.cl} ${d.align}`)
         .text(d => d.head)
-        .on('click', (d) => {
+        .on('click', d => {
           console.log('d from click', d);
           let ascending;
           if (d.ascending) {
@@ -159,27 +159,31 @@ function drawPictogramTable (props) {
 
       if (typeof trUpdate !== 'undefined') {
         const trExit = trUpdate.exit();
-        trExit.remove()
+        trExit.remove();
       }
-      trUpdate = table.select('tbody').selectAll('tr')
+      trUpdate = table
+        .select('tbody')
+        .selectAll('tr')
         .data(tableData);
 
       tableMerge = tableUpdate.merge(tableEnter);
 
       trEnter = trUpdate.enter().append('tr');
 
-      trMerge = trUpdate.merge(trEnter)
+      trMerge = trUpdate
+        .merge(trEnter)
         .on('mouseenter', mouseenter)
         .on('mouseleave', mouseleave);
 
-      const tdUpdate = trMerge.selectAll('td')
-        .data((row, i) => columns.map((c) => {
+      const tdUpdate = trMerge.selectAll('td').data((row, i) =>
+        columns.map(c => {
           const cell = {};
-          d3.keys(c).forEach((k) => {
+          d3.keys(c).forEach(k => {
             cell[k] = typeof c[k] === 'function' ? c[k](row, i) : c[k];
           });
           return cell;
-        }));
+        })
+      );
 
       const tdEnter = tdUpdate.enter().append('td');
 
@@ -193,13 +197,17 @@ function drawPictogramTable (props) {
   }
 
   function mouseenter() {
-    d3.select(this).selectAll('td')
+    d3
+      .select(this)
+      .selectAll('td')
       .style('background-color', '#f0f0f0')
       .style('border-bottom', '.5px solid slategrey');
   }
 
   function mouseleave() {
-    d3.select(this).selectAll('td')
+    d3
+      .select(this)
+      .selectAll('td')
       .style('background-color', 'rgba(255,255,255,0.9)')
       .style('border-bottom', '.5px solid white');
   }
