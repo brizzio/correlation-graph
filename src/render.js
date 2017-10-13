@@ -29,7 +29,7 @@ export default function render(props) {
   const height = parentHeight;
   console.log('width', width);
   console.log('height', height);
-  
+
   const linkWeightThreshold = 0.79;
   const soloNodeLinkWeightThreshold = 0.1;
   const labelTextScalingFactor = 28;
@@ -44,7 +44,7 @@ export default function render(props) {
 
   const z = d3.scaleOrdinal(d3.schemeCategory20);
 
-  // determines if nodes and node labels size is fixed 
+  // determines if nodes and node labels size is fixed
   // defaults to `undefined`
   const fixedNodeSize = options.fixedNodeSize;
   const defaultNodeRadius = '9px';
@@ -53,17 +53,21 @@ export default function render(props) {
   //
   //
 
-  const svg = d3.select(selector).append('svg')
+  const svg = d3
+    .select(selector)
+    .append('svg')
     .attr('width', width)
-    .attr('height', height)
+    .attr('height', height);
 
-  const backgroundRect = svg.append('rect')
+  const backgroundRect = svg
+    .append('rect')
     .attr('width', width)
     .attr('height', height)
     .classed('background', true)
     .style('fill', 'white');
 
-  const linkWidthScale = d3.scalePow()
+  const linkWidthScale = d3
+    .scalePow()
     .exponent(2)
     .domain([0, 1])
     .range([0, 5]);
@@ -81,7 +85,7 @@ export default function render(props) {
     '#fb9a99',
     '#fdbf6f',
     '#cab2d6',
-    '#ffff99',
+    '#ffff99'
   ];
 
   const gephiSoftColors = [
@@ -92,13 +96,12 @@ export default function render(props) {
     '#efc4ff', // soft violet
     '#a6a39f', // smoke gray
     '#80deca', // teal
-    '#e9d9d8'  // pink gray
+    '#e9d9d8' // pink gray
   ];
 
   const textMainGray = '#635F5D';
 
-  const color = d3.scaleOrdinal()
-    .range(boldAlternating12);
+  const color = d3.scaleOrdinal().range(boldAlternating12);
 
   //
   // data-driven code starts here
@@ -106,7 +109,7 @@ export default function render(props) {
 
   const graph = inputData;
   const nodes = _.cloneDeep(graph.nodes);
-  const links = _.cloneDeep(graph.edges); 
+  const links = _.cloneDeep(graph.edges);
 
   // total number of nodes
   const n = nodes.length;
@@ -177,7 +180,7 @@ export default function render(props) {
 
   //
   // calculate the linkWeightSums for each node
-  // 
+  //
   nodes.forEach(d => {
     d.linkWeightSum = 0;
   });
@@ -202,9 +205,9 @@ export default function render(props) {
   //
 
   const defaultRadius = 10;
-  nodes.forEach(function (node) {
+  nodes.forEach(function(node) {
     node.r = defaultRadius;
-    node.cluster = communities[node.id]
+    node.cluster = communities[node.id];
   });
 
   //
@@ -212,10 +215,10 @@ export default function render(props) {
   //
 
   const clusters = {};
-  nodes.forEach((node) => {
+  nodes.forEach(node => {
     const radius = node.r;
     const clusterID = node.cluster;
-    if (!clusters[clusterID] || (radius > clusters[clusterID].r)) { 
+    if (!clusters[clusterID] || radius > clusters[clusterID].r) {
       clusters[clusterID] = node;
     }
   });
@@ -225,90 +228,92 @@ export default function render(props) {
   // now we draw elements on the page
   //
 
-  const link = svg.append('g')
+  const link = svg
+    .append('g')
     .style('stroke', '#aaa')
     .selectAll('line')
-      .data(links)
-      .enter().append('line')
-      .style('stroke-width', d => linkWidthScale(d.weight))
-      .style('stroke-opacity', 0.4);
+    .data(links)
+    .enter()
+    .append('line')
+    .style('stroke-width', d => linkWidthScale(d.weight))
+    .style('stroke-opacity', 0.4);
 
-  link
-    .attr('class', 'link')
-    .attr('marker-end', 'url(#end-arrow)')
+  link.attr('class', 'link').attr('marker-end', 'url(#end-arrow)');
 
-  const nodesParentG = svg.append('g')
-    .attr('class', 'nodes');
+  const nodesParentG = svg.append('g').attr('class', 'nodes');
 
-  const node = nodesParentG.selectAll('.node')
+  const node = nodesParentG
+    .selectAll('.node')
     .data(nodes)
-    .enter().append('g')
+    .enter()
+    .append('g')
     .classed('node', true)
     .attr('id', d => `node${d.id}`);
 
-  const nodeRadiusScale = d3.scaleLinear()
+  const nodeRadiusScale = d3
+    .scaleLinear()
     .domain([0, nodes.length])
     .range([5, 30]);
 
   const backgroundNode = node
     .append('circle')
-      .attr('r', d => {
-        if (typeof fixedNodeSize !== 'undefined') {
-          return `${defaultRadius}px`
-        }
-        // return `${nodeRadiusScale(d.inDegree)}px`
-        return `${nodeRadiusScale(d.linkWeightSum)}px`
-      })
-      .classed('background', true);
+    .attr('r', d => {
+      if (typeof fixedNodeSize !== 'undefined') {
+        return `${defaultRadius}px`;
+      }
+      // return `${nodeRadiusScale(d.inDegree)}px`
+      return `${nodeRadiusScale(d.linkWeightSum)}px`;
+    })
+    .classed('background', true);
 
   const nodeCircle = node
     .append('circle')
-      .attr('r', d => {
-        if (typeof fixedNodeSize !== 'undefined') {
-          return `${defaultRadius}px`
-        }
-        // return `${nodeRadiusScale(d.inDegree)}px`
-        return `${nodeRadiusScale(d.linkWeightSum)}px`
-      })
-      .on('mouseover', fade(0.1))
-      // .on('mouseout', fade(0.4))
-      .classed('mark', true);
+    .attr('r', d => {
+      if (typeof fixedNodeSize !== 'undefined') {
+        return `${defaultRadius}px`;
+      }
+      // return `${nodeRadiusScale(d.inDegree)}px`
+      return `${nodeRadiusScale(d.linkWeightSum)}px`;
+    })
+    .on('mouseover', fade(0.1))
+    // .on('mouseout', fade(0.4))
+    .classed('mark', true);
 
   // draw labels
-  const label = node.append('text')
+  const label = node
+    .append('text')
     .text(d => d.name)
-
-    .style('font-size', function (d) {
+    .style('font-size', function(d) {
       if (typeof fixedNodeSize !== 'undefined') {
         return `${defaultRadius * 1}px`;
       }
-      return `${
-        Math.max(
-          Math.min(
-            2 * nodeRadiusScale(d.linkWeightSum),
-            (2 * nodeRadiusScale(d.linkWeightSum) - 8) / this.getComputedTextLength() * labelTextScalingFactor
-          ),
-          // Math.min(
-          //   2 * nodeRadiusScale(d.inDegree),
-          //   (2 * nodeRadiusScale(d.inDegree) - 8) / this.getComputedTextLength() * labelTextScalingFactor
-          // ),
-          8
-        )
-      }px`;
+      return `${Math.max(
+        Math.min(
+          2 * nodeRadiusScale(d.linkWeightSum),
+          (2 * nodeRadiusScale(d.linkWeightSum) - 8) /
+            this.getComputedTextLength() *
+            labelTextScalingFactor
+        ),
+        // Math.min(
+        //   2 * nodeRadiusScale(d.inDegree),
+        //   (2 * nodeRadiusScale(d.inDegree) - 8) / this.getComputedTextLength() * labelTextScalingFactor
+        // ),
+        8
+      )}px`;
     })
     .style('fill', '#666')
     .style('fill-opacity', 1)
     .style('pointer-events', 'none')
     .style('stroke', 'none')
     .attr('class', 'label')
-    .attr('dx', function (d) {
+    .attr('dx', function(d) {
       const dxValue = `${-1 * (this.getComputedTextLength() / 2)}px`;
       return dxValue;
     })
     .attr('dy', '.35em');
 
   const linkedByIndex = {};
-  linksAboveSoloNodeThreshold.forEach((d) => {
+  linksAboveSoloNodeThreshold.forEach(d => {
     // console.log('d from linkedByIndex creation', d);
     linkedByIndex[`${d.source},${d.target}`] = true;
   });
@@ -316,8 +321,7 @@ export default function render(props) {
 
   // click on the background to reset the fade
   // to show all nodes
-  backgroundRect
-    .on('click', resetFade());
+  backgroundRect.on('click', resetFade());
 
   const boundTicked = ticked.bind(
     this,
@@ -331,7 +335,8 @@ export default function render(props) {
     node
   );
 
-  const simulation = d3.forceSimulation()
+  const simulation = d3
+    .forceSimulation()
     .nodes(nodes)
     .force('link', d3.forceLink().id(d => d.id))
     .velocityDecay(0.2)
@@ -343,18 +348,18 @@ export default function render(props) {
     .force('center', d3.forceCenter(width / 2, height / 2))
     .on('tick', boundTicked);
 
-  simulation.force('link')
-    .links(links);
+  simulation.force('link').links(links);
 
   const boundDragstarted = dragstarted.bind(this, simulation);
   const boundDragended = dragended.bind(this, simulation);
 
-  node
-    .call(d3.drag()
+  node.call(
+    d3
+      .drag()
       .on('start', boundDragstarted)
       .on('drag', dragged)
       .on('end', boundDragended)
-    );
+  );
 
   // draw the help text
   drawHelpText({
@@ -367,15 +372,15 @@ export default function render(props) {
   //
 
   function clustering(alpha) {
-    nodes.forEach((d) => {
+    nodes.forEach(d => {
       const cluster = clusters[d.cluster];
       if (cluster === d) return;
       let x = d.x - cluster.x;
       let y = d.y - cluster.y;
-      let l = Math.sqrt((x * x) + (y * y));
+      let l = Math.sqrt(x * x + y * y);
       const r = d.r + cluster.r;
       if (l !== r) {
-        l = ((l - r) / l) * alpha;
+        l = (l - r) / l * alpha;
         d.x -= x *= l;
         d.y -= y *= l;
         cluster.x += x;
@@ -385,25 +390,29 @@ export default function render(props) {
   }
 
   function collide(alpha) {
-    const quadtree = d3.quadtree()
+    const quadtree = d3
+      .quadtree()
       .x(d => d.x)
       .y(d => d.y)
       .addAll(nodes);
 
-    nodes.forEach((d) => {
+    nodes.forEach(d => {
       const r = d.r + maxRadius + Math.max(padding, clusterPadding);
       const nx1 = d.x - r;
       const nx2 = d.x + r;
       const ny1 = d.y - r;
       const ny2 = d.y + r;
       quadtree.visit((quad, x1, y1, x2, y2) => {
-        if (quad.data && (quad.data !== d)) {
+        if (quad.data && quad.data !== d) {
           let x = d.x - quad.data.x;
           let y = d.y - quad.data.y;
-          let l = Math.sqrt((x * x) + (y * y));
-          const r = d.r + quad.data.r + (d.cluster === quad.data.cluster ? padding : clusterPadding);
+          let l = Math.sqrt(x * x + y * y);
+          const r =
+            d.r +
+            quad.data.r +
+            (d.cluster === quad.data.cluster ? padding : clusterPadding);
           if (l < r) {
-            l = ((l - r) / l) * alpha;
+            l = (l - r) / l * alpha;
             d.x -= x *= l;
             d.y -= y *= l;
             quad.data.x += x;
@@ -420,7 +429,11 @@ export default function render(props) {
   //
 
   function isConnected(a, b) {
-    return isConnectedAsTarget(a, b) || isConnectedAsSource(a, b) || a.index === b.index;
+    return (
+      isConnectedAsTarget(a, b) ||
+      isConnectedAsSource(a, b) ||
+      a.index === b.index
+    );
   }
 
   function isConnectedAsSource(a, b) {
@@ -437,7 +450,7 @@ export default function render(props) {
 
   function fade(opacity) {
     return d => {
-      node.style('stroke-opacity', function (o) {
+      node.style('stroke-opacity', function(o) {
         // console.log('o from fade node.style', o);
         // console.log('isConnected(d, o)', isConnected(d, o));
         // const thisOpacity = isConnected(d, o) ? defaultOpacity : opacity;
@@ -448,23 +461,29 @@ export default function render(props) {
         // console.log('this.id', this.id);
         // this.setAttribute('fill-opacity', thisOpacity);
         const defaultMarkOpacity = 0.4;
-        d3.select(`#${this.id}`).selectAll('.mark')
+        d3
+          .select(`#${this.id}`)
+          .selectAll('.mark')
           .style('fill-opacity', p => {
             // console.log('p from fade mark', p);
             // console.log('isConnected(d, p) mark', isConnected(d, p));
-            const markOpacity = isConnected(d, p) ? defaultMarkOpacity : opacity;
+            const markOpacity = isConnected(d, p)
+              ? defaultMarkOpacity
+              : opacity;
             // console.log('markOpacity', markOpacity);
             return markOpacity;
           });
 
         // style the label text
         const defaultLabelOpacity = 1;
-        d3.select(`#${this.id}`).selectAll('.label')
+        d3
+          .select(`#${this.id}`)
+          .selectAll('.label')
           .style('fill-opacity', p => {
             // console.log('p from fade label', p);
             // console.log('isConnected(d, p) label', isConnected(d, p));
             let labelOpacity = 1;
-            if (!isConnected(d, p) && (opacity !== defaultMarkOpacity)) {
+            if (!isConnected(d, p) && opacity !== defaultMarkOpacity) {
               labelOpacity = opacity;
             }
             // console.log('labelOpacity', labelOpacity);
@@ -485,7 +504,11 @@ export default function render(props) {
         return opacity;
       });
       link.attr('marker-end', o => {
-        if (opacity === defaultLinkOpacity || o.source.id === d.id || o.target.id === d.id) {
+        if (
+          opacity === defaultLinkOpacity ||
+          o.source.id === d.id ||
+          o.target.id === d.id
+        ) {
           return 'url(#end-arrow)';
         }
         return 'url(#end-arrow-fade)';
@@ -498,18 +521,24 @@ export default function render(props) {
       console.log('resetFade function was called');
       // reset marks
       const defaultMarkOpacity = 0.4;
-      d3.select(selector).selectAll('.mark')
+      d3
+        .select(selector)
+        .selectAll('.mark')
         .style('fill-opacity', defaultMarkOpacity);
 
       // reset labels
       const defaultLabelOpacity = 1;
-      d3.select(selector).selectAll('.label')
+      d3
+        .select(selector)
+        .selectAll('.label')
         .style('fill-opacity', defaultLabelOpacity);
 
       // reset links
       const defaultLinkOpacity = 0.4;
-      d3.select(selector).selectAll('.link')
+      d3
+        .select(selector)
+        .selectAll('.link')
         .style('stroke-opacity', defaultLinkOpacity);
-    }
+    };
   }
 }

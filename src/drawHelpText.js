@@ -4,7 +4,9 @@ export default function drawHelpText(props) {
   const xOffset = 75;
   const yOffset = height - 10;
   const helpText = `mouse over a node to see it's relationships. click the background to reset.`;
-  d3.select(selector).append('g')
+  d3
+    .select(selector)
+    .append('g')
     .attr('transform', `translate(${xOffset},${yOffset})`)
     .append('text')
     .style('fill', '#666')
