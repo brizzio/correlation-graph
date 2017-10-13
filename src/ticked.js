@@ -18,15 +18,12 @@ export default function ticked(
         return textMainGray;
       }
       return color(communities[d.source.id]);
-    })
-    // .style('stroke-opacity', 0.4);
+    });
+  // .style('stroke-opacity', 0.4);
 
-  nodeG
-    .attr('transform', d => `translate(${d.x},${d.y})`);
+  nodeG.attr('transform', d => `translate(${d.x},${d.y})`);
 
-  backgroundNode
-    .style('fill', 'white')
-    .style('fill-opacity', 1);
+  backgroundNode.style('fill', 'white').style('fill-opacity', 1);
 
   node
     .style('fill', (d, i) => {
