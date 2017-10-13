@@ -58,13 +58,13 @@ function dragended(simulation) {
   d3.event.subject.fy = null;
 }
 
-function drawHelpText(props) {
+function drawText(props) {
   var selector = props.selector;
   var height = props.height;
   var xOffset = 75;
   var yOffset = height - 10;
-  var helpText = 'mouse over a node to see it\'s relationships. click the background to reset.';
-  d3.select(selector).append('g').attr('transform', 'translate(' + xOffset + ',' + yOffset + ')').append('text').style('fill', '#666').style('fill-opacity', 1).style('pointer-events', 'none').style('stroke', 'none').style('font-size', 10).text(helpText);
+  var text = props.text;
+  d3.select(selector).append('g').attr('transform', 'translate(' + xOffset + ',' + yOffset + ')').append('text').style('fill', '#666').style('fill-opacity', 1).style('pointer-events', 'none').style('stroke', 'none').style('font-size', 10).text(text);
 }
 
 /* global d3 _ jLouvain window document */
@@ -107,7 +107,7 @@ function render(props) {
 
   var z = d3.scaleOrdinal(d3.schemeCategory20);
 
-  // determines if nodes and node labels size is fixed 
+  // determines if nodes and node labels size is fixed
   // defaults to `undefined`
   var fixedNodeSize = options.fixedNodeSize;
   var defaultNodeRadius = '9px';
@@ -216,7 +216,7 @@ function render(props) {
 
   //
   // calculate the linkWeightSums for each node
-  // 
+  //
   nodes.forEach(function (d) {
     d.linkWeightSum = 0;
   });
@@ -337,9 +337,21 @@ function render(props) {
   node.call(d3.drag().on('start', boundDragstarted).on('drag', dragged).on('end', boundDragended));
 
   // draw the help text
-  drawHelpText({
+  drawText({
     selector: 'svg',
+    text: 'mouse over a node to see it\'s relationships. click the background to reset.',
     height: height
+  });
+
+  d3.select('div#graph').append('div').attr('id', 'slider-container');
+
+  // draw the slider control
+  drawSliderControl({
+    selector: 'div#slider-container',
+    padding: '10px',
+    defaultLinkOpacity: 0.4,
+    defaultMarkOpacity: 0.4,
+    defaultLabelOpacity: 1
   });
 
   //
@@ -483,6 +495,53 @@ function render(props) {
       var defaultLinkOpacity = 0.4;
       d3.select(selector).selectAll('.link').style('stroke-opacity', defaultLinkOpacity);
     };
+  }
+
+  /* global d3 */
+  function drawSliderControl(props) {
+    var selector = props.selector;
+    var padding = props.padding;
+    var defaultMarkOpacity = props.defaultMarkOpacity;
+    var defaultLinkOpacity = props.defaultLinkOpacity;
+    var defaultLabelOpacity = props.defaultLabelOpacity;
+
+    d3.select(selector).append('input').attr('type', 'range').attr('min', 0).attr('max', 1).attr('value', 0.356).attr('step', 0.001).style('top', '604px').style('left', '90px').style('height', '36px').style('width', '450px').style('position', 'fixed').attr('id', 'slider');
+
+    d3.select('#slider').on('input', function () {
+      update(+this.value);
+    });
+
+    function update(sliderValue) {
+      console.log('sliderValue', sliderValue);
+      // adjust the text on the range slider
+      d3.select('#nRadius-value').text(sliderValue);
+      d3.select('#nRadius').property('value', sliderValue);
+
+      d3.selectAll('.link').style('stroke-opacity', function (d) {
+        // console.log('d from slider update', d);
+        if (d.weight < sliderValue) {
+          return 0;
+        }
+        return defaultLinkOpacity;
+      });
+
+      d3.selectAll('.mark').style('fill-opacity', function (d) {
+        // first style the label associated with the mark
+        // console.log('d from mark selection', d);
+        d3.select('#node' + d.id).selectAll('.label').style('fill-opacity', function () {
+          if (d.maxLinkWeight < sliderValue) {
+            return 0.1;
+          }
+          return defaultLabelOpacity;
+        });
+
+        // then style the mark itself
+        if (d.maxLinkWeight < sliderValue) {
+          return 0.1;
+        }
+        return defaultMarkOpacity;
+      });
+    }
   }
 }
 

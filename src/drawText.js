@@ -1,9 +1,9 @@
-export default function drawHelpText(props) {
+export default function drawText(props) {
   const selector = props.selector;
   const height = props.height;
   const xOffset = 75;
   const yOffset = height - 10;
-  const helpText = `mouse over a node to see it's relationships. click the background to reset.`;
+  const text = props.text;
   d3
     .select(selector)
     .append('g')
@@ -14,5 +14,5 @@ export default function drawHelpText(props) {
     .style('pointer-events', 'none')
     .style('stroke', 'none')
     .style('font-size', 10)
-    .text(helpText);
+    .text(text);
 }

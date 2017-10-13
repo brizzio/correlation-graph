@@ -58,129 +58,13 @@ function dragended(simulation) {
   d3.event.subject.fy = null;
 }
 
-/* global d3 */
-
-function drawHelpText(props) {
+function drawText(props) {
   var selector = props.selector;
   var height = props.height;
   var xOffset = 75;
   var yOffset = height - 10;
-  var helpText = 'mouse over a node to see it\'s relationships. click the background to reset.';
-  d3.select(selector).append('g').attr('transform', 'translate(' + xOffset + ',' + yOffset + ')').append('text').style('fill', '#666').style('fill-opacity', 1).style('pointer-events', 'none').style('stroke', 'none').style('font-size', 10).text(helpText);
-}
-
-/* global d3 */
-
-function fade(props) {
-  var opacity = props.opacity;
-  var ignoreLinks = props.ignoreLinks;
-
-  var node = props.node;
-  var link = props.link;
-  var isConnected = props.isConnected;
-
-  return function (d) {
-    node.style('stroke-opacity', function (o) {
-      // console.log('o from fade node.style', o);
-      // console.log('isConnected(d, o)', isConnected(d, o));
-      // const thisOpacity = isConnected(d, o) ? defaultOpacity : opacity;
-      // console.log('thisOpacity from fade node.style', thisOpacity);
-      // console.log('this from fade node.style', this);
-
-      // style the mark circle
-      // console.log('this.id', this.id);
-      // this.setAttribute('fill-opacity', thisOpacity);
-      var defaultMarkOpacity = 0.4;
-      d3.select('#' + this.id).selectAll('.mark').style('fill-opacity', function (p) {
-        // console.log('p from fade mark', p);
-        // console.log('isConnected(d, p) mark', isConnected(d, p));
-        var markOpacity = isConnected(d, p) ? defaultMarkOpacity : opacity;
-        // console.log('markOpacity', markOpacity);
-        return markOpacity;
-      });
-
-      // style the label text
-      var defaultLabelOpacity = 1;
-      d3.select('#' + this.id).selectAll('.label').style('fill-opacity', function (p) {
-        // console.log('p from fade label', p);
-        // console.log('isConnected(d, p) label', isConnected(d, p));
-        var labelOpacity = 1;
-        if (!isConnected(d, p) && opacity !== defaultMarkOpacity) {
-          labelOpacity = opacity;
-        }
-        // console.log('labelOpacity', labelOpacity);
-        return labelOpacity;
-      });
-
-      return 1;
-    });
-
-    if (typeof ignoreLinks === 'undefined') {
-      // style the link lines
-      var defaultLinkOpacity = 0.4;
-      link.style('stroke-opacity', function (o) {
-        // console.log('o from fade link style', o);
-        // console.log('d from fade link style', d);
-        if (o.source.id === d.id || o.target.id === d.id) {
-          return defaultLinkOpacity;
-        }
-        return opacity;
-      });
-      link.attr('marker-end', function (o) {
-        if (opacity === defaultLinkOpacity || o.source.id === d.id || o.target.id === d.id) {
-          return 'url(#end-arrow)';
-        }
-        return 'url(#end-arrow-fade)';
-      });
-    }
-  };
-}
-
-/* global d3 */
-function drawSliderControl(props) {
-  var selector = props.selector;
-  var padding = props.padding;
-  var defaultMarkOpacity = props.defaultMarkOpacity;
-  var defaultLinkOpacity = props.defaultLinkOpacity;
-  var defaultLabelOpacity = props.defaultLabelOpacity;
-
-  d3.select(selector).append('input').attr('type', 'range').attr('min', 0).attr('max', 1).attr('value', 0.356).attr('step', 0.001).style('top', '604px').style('left', '90px').style('height', '36px').style('width', '450px').style('position', 'fixed').attr('id', 'slider');
-
-  d3.select('#slider').on('input', function () {
-    update(+this.value);
-  });
-
-  function update(sliderValue) {
-    console.log('sliderValue', sliderValue);
-    // adjust the text on the range slider
-    d3.select('#nRadius-value').text(sliderValue);
-    d3.select('#nRadius').property('value', sliderValue);
-
-    d3.selectAll('.link').style('stroke-opacity', function (d) {
-      // console.log('d from slider update', d);
-      if (d.weight < sliderValue) {
-        return 0;
-      }
-      return defaultLinkOpacity;
-    });
-
-    d3.selectAll('.mark').style('fill-opacity', function (d) {
-      // first style the label associated with the mark
-      // console.log('d from mark selection', d);
-      d3.select('#node' + d.id).selectAll('.label').style('fill-opacity', function () {
-        if (d.maxLinkWeight < sliderValue) {
-          return 0.1;
-        }
-        return defaultLabelOpacity;
-      });
-
-      // then style the mark itself
-      if (d.maxLinkWeight < sliderValue) {
-        return 0.1;
-      }
-      return defaultMarkOpacity;
-    });
-  }
+  var text = props.text;
+  d3.select(selector).append('g').attr('transform', 'translate(' + xOffset + ',' + yOffset + ')').append('text').style('fill', '#666').style('fill-opacity', 1).style('pointer-events', 'none').style('stroke', 'none').style('font-size', 10).text(text);
 }
 
 /* global d3 _ jLouvain window document */
@@ -248,7 +132,8 @@ function render(props) {
   '#efc4ff', // soft violet
   '#a6a39f', // smoke gray
   '#80deca', // teal
-  '#e9d9d8'];
+  '#e9d9d8' // pink gray
+  ];
 
   var textMainGray = '#635F5D';
 
@@ -315,36 +200,29 @@ function render(props) {
   console.log('linksForCommunityDetection', linksForCommunityDetection);
 
   //
-  // initialize calculated node values
+  // calculate degree for each node
+  // where `degree` is the number of links
+  // that a node has
   //
+
   nodes.forEach(function (d) {
     d.inDegree = 0;
     d.outDegree = 0;
-    d.linkWeightSum = 0;
-    d.maxLinkWeight = 0;
   });
-
-  // 
-  // do link-based calculations in a single forEach loop
-  //
   links.forEach(function (d) {
-    // calculate degree for each node
-    // where `degree` is the number of links
-    // that a node has
     nodes[d.source].outDegree += 1;
     nodes[d.target].inDegree += 1;
+  });
 
-    // calculate the linkWeightSums for each node
+  //
+  // calculate the linkWeightSums for each node
+  //
+  nodes.forEach(function (d) {
+    d.linkWeightSum = 0;
+  });
+  links.forEach(function (d) {
     nodes[d.source].linkWeightSum += d.weight;
     nodes[d.target].linkWeightSum += d.weight;
-
-    // calculate the maxLinkWeight for each node
-    if (d.weight > nodes[d.source].maxLinkWeight) {
-      nodes[d.source].maxLinkWeight = d.weight;
-    }
-    if (d.weight > nodes[d.target].maxLinkWeight) {
-      nodes[d.target].maxLinkWeight = d.weight;
-    }
   });
 
   //
@@ -412,13 +290,8 @@ function render(props) {
     }
     // return `${nodeRadiusScale(d.inDegree)}px`
     return nodeRadiusScale(d.linkWeightSum) + 'px';
-  }).on('mouseover', fade({
-    opacity: 0.1,
-    node: node,
-    link: link,
-    isConnected: isConnected
-  }))
-  // .on('mouseout', fade({ opacity: 0.4 }))
+  }).on('mouseover', fade(0.1))
+  // .on('mouseout', fade(0.4))
   .classed('mark', true);
 
   // draw labels
@@ -464,8 +337,9 @@ function render(props) {
   node.call(d3.drag().on('start', boundDragstarted).on('drag', dragged).on('end', boundDragended));
 
   // draw the help text
-  drawHelpText({
+  drawText({
     selector: 'svg',
+    text: 'mouse over a node to see it\'s relationships. click the background to reset.',
     height: height
   });
 
@@ -550,6 +424,62 @@ function render(props) {
     return linkedByIndex[b.index + ',' + a.index];
   }
 
+  function fade(opacity) {
+    return function (d) {
+      node.style('stroke-opacity', function (o) {
+        // console.log('o from fade node.style', o);
+        // console.log('isConnected(d, o)', isConnected(d, o));
+        // const thisOpacity = isConnected(d, o) ? defaultOpacity : opacity;
+        // console.log('thisOpacity from fade node.style', thisOpacity);
+        // console.log('this from fade node.style', this);
+
+        // style the mark circle
+        // console.log('this.id', this.id);
+        // this.setAttribute('fill-opacity', thisOpacity);
+        var defaultMarkOpacity = 0.4;
+        d3.select('#' + this.id).selectAll('.mark').style('fill-opacity', function (p) {
+          // console.log('p from fade mark', p);
+          // console.log('isConnected(d, p) mark', isConnected(d, p));
+          var markOpacity = isConnected(d, p) ? defaultMarkOpacity : opacity;
+          // console.log('markOpacity', markOpacity);
+          return markOpacity;
+        });
+
+        // style the label text
+        var defaultLabelOpacity = 1;
+        d3.select('#' + this.id).selectAll('.label').style('fill-opacity', function (p) {
+          // console.log('p from fade label', p);
+          // console.log('isConnected(d, p) label', isConnected(d, p));
+          var labelOpacity = 1;
+          if (!isConnected(d, p) && opacity !== defaultMarkOpacity) {
+            labelOpacity = opacity;
+          }
+          // console.log('labelOpacity', labelOpacity);
+          return labelOpacity;
+        });
+
+        return 1;
+      });
+
+      // style the link lines
+      var defaultLinkOpacity = 0.4;
+      link.style('stroke-opacity', function (o) {
+        // console.log('o from fade link style', o);
+        // console.log('d from fade link style', d);
+        if (o.source.id === d.id || o.target.id === d.id) {
+          return defaultLinkOpacity;
+        }
+        return opacity;
+      });
+      link.attr('marker-end', function (o) {
+        if (opacity === defaultLinkOpacity || o.source.id === d.id || o.target.id === d.id) {
+          return 'url(#end-arrow)';
+        }
+        return 'url(#end-arrow-fade)';
+      });
+    };
+  }
+
   function resetFade() {
     return function () {
       console.log('resetFade function was called');
@@ -565,6 +495,53 @@ function render(props) {
       var defaultLinkOpacity = 0.4;
       d3.select(selector).selectAll('.link').style('stroke-opacity', defaultLinkOpacity);
     };
+  }
+
+  /* global d3 */
+  function drawSliderControl(props) {
+    var selector = props.selector;
+    var padding = props.padding;
+    var defaultMarkOpacity = props.defaultMarkOpacity;
+    var defaultLinkOpacity = props.defaultLinkOpacity;
+    var defaultLabelOpacity = props.defaultLabelOpacity;
+
+    d3.select(selector).append('input').attr('type', 'range').attr('min', 0).attr('max', 1).attr('value', 0.356).attr('step', 0.001).style('top', '604px').style('left', '90px').style('height', '36px').style('width', '450px').style('position', 'fixed').attr('id', 'slider');
+
+    d3.select('#slider').on('input', function () {
+      update(+this.value);
+    });
+
+    function update(sliderValue) {
+      console.log('sliderValue', sliderValue);
+      // adjust the text on the range slider
+      d3.select('#nRadius-value').text(sliderValue);
+      d3.select('#nRadius').property('value', sliderValue);
+
+      d3.selectAll('.link').style('stroke-opacity', function (d) {
+        // console.log('d from slider update', d);
+        if (d.weight < sliderValue) {
+          return 0;
+        }
+        return defaultLinkOpacity;
+      });
+
+      d3.selectAll('.mark').style('fill-opacity', function (d) {
+        // first style the label associated with the mark
+        // console.log('d from mark selection', d);
+        d3.select('#node' + d.id).selectAll('.label').style('fill-opacity', function () {
+          if (d.maxLinkWeight < sliderValue) {
+            return 0.1;
+          }
+          return defaultLabelOpacity;
+        });
+
+        // then style the mark itself
+        if (d.maxLinkWeight < sliderValue) {
+          return 0.1;
+        }
+        return defaultMarkOpacity;
+      });
+    }
   }
 }
 
