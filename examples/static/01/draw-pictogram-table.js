@@ -38,6 +38,7 @@ function drawPictogramTable(props) {
   }
 
   const table = d3.select(selector).append('table');
+  table.attr('class', 'pictogramTable');
   table.append('thead');
   table.append('tbody');
 
